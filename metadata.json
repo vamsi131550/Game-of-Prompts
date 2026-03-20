@@ -1,0 +1,5 @@
+{
+  "name": "CropHealth AI",
+  "description": "AI-powered crop health monitoring and weather dashboard for farmers. Analyze crop diseases from photos and get localized weather advice.",
+  "requestFramePermissions": ["geolocation"]
+}
