@@ -1,0 +1,48 @@
+{
+  "entities": {
+    "VoiceNote": {
+      "title": "Voice Note",
+      "description": "A voice note shared by a farmer",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "url": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "duration": { "type": "number" },
+        "author": { "type": "string" },
+        "authorUid": { "type": "string" }
+      },
+      "required": ["id", "url", "timestamp", "duration", "author", "authorUid"]
+    },
+    "CropAnalysis": {
+      "title": "Crop Analysis",
+      "description": "A crop health analysis record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "image": { "type": "string" },
+        "result": {
+          "type": "object",
+          "properties": {
+            "healthStatus": { "type": "string" },
+            "diagnosis": { "type": "string" },
+            "advice": { "type": "string" }
+          }
+        },
+        "uid": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "image", "result", "uid"]
+    }
+  },
+  "firestore": {
+    "/voice_notes/{noteId}": {
+      "schema": "VoiceNote",
+      "description": "Collection of shared voice notes"
+    },
+    "/crop_history/{analysisId}": {
+      "schema": "CropAnalysis",
+      "description": "Collection of crop analysis history per user"
+    }
+  }
+}

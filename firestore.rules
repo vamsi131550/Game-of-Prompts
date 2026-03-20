@@ -1,0 +1,111 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: voice_notes
+    // Document ID: {noteId}
+    // Fields:
+    //   - id: string (required)
+    //   - url: string (required)
+    //   - timestamp: number (required)
+    //   - duration: number (required)
+    //   - author: string (required)
+    //   - authorUid: string (required)
+    //
+    // Collection: crop_history
+    // Document ID: {analysisId}
+    // Fields:
+    //   - id: string (required)
+    //   - timestamp: number (required)
+    //   - image: string (required)
+    //   - result: map (required)
+    //     - healthStatus: string
+    //     - diagnosis: string
+    //     - advice: string
+    //   - uid: string (required)
+    //
+    // ===============================================================
+
+    // Collection: dashboards
+    // Document ID: {uid}
+    // Fields:
+    //   - soil: map (required)
+    //   - weather: map (required)
+    //   - crop_health: map (required)
+    //   - market: map (required)
+    //   - positive_insights: list (required)
+    //   - negative_insights: list (required)
+    //   - overall_summary: string (required)
+    //   - timestamp: number (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function isValidVoiceNote(data) {
+      return data.keys().hasAll(['id', 'url', 'timestamp', 'duration', 'author', 'authorUid']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.url is string && data.url.size() < 1000 &&
+             data.timestamp is number &&
+             data.duration is number &&
+             data.author is string && data.author.size() < 100 &&
+             data.authorUid is string &&
+             data.authorUid == request.auth.uid;
+    }
+
+    function isValidCropAnalysis(data) {
+      return data.keys().hasAll(['id', 'timestamp', 'image', 'result', 'uid']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.timestamp is number &&
+             data.image is string && data.image.size() < 1000000 && // 1MB limit for base64
+             data.result is map &&
+             data.uid is string &&
+             data.uid == request.auth.uid;
+    }
+
+    function isValidDashboard(data) {
+      return data.keys().hasAll(['soil', 'weather', 'crop_health', 'market', 'positive_insights', 'negative_insights', 'overall_summary', 'timestamp']) &&
+             data.soil is map &&
+             data.weather is map &&
+             data.crop_health is map &&
+             data.market is map &&
+             data.positive_insights is list &&
+             data.negative_insights is list &&
+             data.overall_summary is string && data.overall_summary.size() < 5000 &&
+             data.timestamp is number;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /voice_notes/{noteId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidVoiceNote(request.resource.data);
+      allow update, delete: if isOwner(resource.data.authorUid);
+    }
+
+    match /crop_history/{analysisId} {
+      allow read: if isOwner(resource.data.uid);
+      allow create: if isAuthenticated() && isValidCropAnalysis(request.resource.data);
+      allow update, delete: if isOwner(resource.data.uid);
+    }
+
+    match /dashboards/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if isOwner(uid) && isValidDashboard(request.resource.data);
+    }
+  }
+}

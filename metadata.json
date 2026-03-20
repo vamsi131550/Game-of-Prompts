@@ -1,5 +1,5 @@
 {
   "name": "CropHealth AI",
-  "description": "AI-powered crop health monitoring and weather dashboard for farmers. Analyze crop diseases from photos and get localized weather advice.",
-  "requestFramePermissions": ["geolocation"]
+  "description": "AI-powered crop health monitoring, smart AI dashboard, weather insights, and real-time sensor monitoring for farmers. Features multilingual AI chat with voice support, image analysis, and actionable farm insights.",
+  "requestFramePermissions": ["geolocation", "microphone"]
 }

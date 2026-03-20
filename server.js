@@ -1,6 +1,10 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+import { existsSync } from 'fs';
+
+dotenv.config();
 
 // Immediate logging to confirm container start
 console.log('--- CONTAINER STARTING ---');
@@ -12,12 +16,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.use(express.json({ limit: '10mb' }));
 
-// Cloud Run provides the PORT environment variable (usually 8080)
-// We MUST listen on this port.
-const PORT = parseInt(process.env.PORT || '8080', 10);
+// Cloud Run provides the PORT environment variable, but AI Studio expects 3000
+const PORT = 3000;
 
-console.log('Environment PORT:', process.env.PORT);
 console.log('Parsed PORT:', PORT);
 
 // Catch-all for early errors
@@ -31,12 +34,14 @@ process.on('unhandledRejection', (reason, promise) => {
   process.exit(1);
 });
 
+// API Routes
+// Gemini logic moved to frontend per guidelines
+
 // Serve static files from the 'dist' directory
 const distPath = path.resolve(__dirname, 'dist');
 console.log('Serving static files from:', distPath);
 
 // Check if dist directory exists (logging only)
-import { existsSync } from 'fs';
 if (existsSync(distPath)) {
   console.log('SUCCESS: dist directory found');
 } else {
